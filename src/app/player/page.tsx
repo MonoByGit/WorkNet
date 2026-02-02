@@ -1,3 +1,5 @@
+'use client'
+
 // Player Page - Client Component handling LocalStorage pairing
 import { useEffect, useState } from 'react'
 import { PairingScreen } from '@/components/player/PairingScreen'

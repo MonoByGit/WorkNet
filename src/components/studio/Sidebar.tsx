@@ -79,10 +79,8 @@ export function Sidebar({ regions }: SidebarProps) {
                 </button>
                 <button
                     onClick={async () => {
-                        const { createClient } = await import('@/utils/supabase/client')
-                        const supabase = createClient()
-                        await supabase.auth.signOut()
-                        window.location.href = '/login'
+                        const { signOut } = await import('next-auth/react')
+                        await signOut({ callbackUrl: '/login' })
                     }}
                     className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-500/60 hover:text-red-400 w-full rounded-2xl hover:bg-red-500/10 transition-colors mt-2"
                 >

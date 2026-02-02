@@ -9,7 +9,9 @@ import { Loader2 } from 'lucide-react'
 
 // Switched to Client Component to handle live refreshing and state easier for the "Dashboard" feel
 // In a refined app, we'd use Server Actions + revalidatePath
-export default function StudioPage() {
+import { Suspense } from 'react'
+
+function StudioContent() {
     const searchParams = useSearchParams()
     const [ads, setAds] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
@@ -57,5 +59,17 @@ export default function StudioPage() {
                 <BentoGrid ads={ads} onRefresh={fetchAds} />
             )}
         </div>
+    )
+}
+
+export default function StudioPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-black flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-white animate-spin" />
+            </div>
+        }>
+            <StudioContent />
+        </Suspense>
     )
 }
