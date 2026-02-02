@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 // Player Page - Client Component handling LocalStorage pairing
 import { useEffect, useState } from 'react'
 import { PairingScreen } from '@/components/player/PairingScreen'

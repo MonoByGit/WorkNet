@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 // Switched to Server Action for data fetching
 import { getAds } from '@/actions/ads'
 import { BentoGrid } from '@/components/studio/BentoGrid'
