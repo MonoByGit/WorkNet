@@ -1,15 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/utils/supabase/client'
-import { Monitor, Save, RefreshCw } from 'lucide-react'
+import { Monitor, Save, RefreshCw, Check } from 'lucide-react'
+import { getScreens } from '@/actions/screens'
 
 interface PairingScreenProps {
     onPaired: (screenId: string) => void
 }
 
 export function PairingScreen({ onPaired }: PairingScreenProps) {
-    const supabase = createClient()
     const [screens, setScreens] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [selectedScreenId, setSelectedScreenId] = useState('')
@@ -20,14 +19,12 @@ export function PairingScreen({ onPaired }: PairingScreenProps) {
 
     const fetchScreens = async () => {
         setLoading(true)
-        // Fetch all screens (or filtered by offline if preferred, but for demo showing all is easier)
-        // Ordered by device_name
-        const { data } = await supabase
-            .from('wn_screens')
-            .select('id, device_name, location_id, wn_locations(name, region)')
-            .order('device_name')
-
-        if (data) setScreens(data)
+        try {
+            const data = await getScreens()
+            setScreens(data)
+        } catch (e) {
+            console.error(e)
+        }
         setLoading(false)
     }
 

@@ -1,6 +1,7 @@
 'use client'
 
-import { createClient } from '@/utils/supabase/client' // Client-side fetch for dynamic updates in this 'Next-Gen' version
+// Switched to Server Action for data fetching
+import { getAds } from '@/actions/ads'
 import { BentoGrid } from '@/components/studio/BentoGrid'
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -9,45 +10,21 @@ import { Loader2 } from 'lucide-react'
 // Switched to Client Component to handle live refreshing and state easier for the "Dashboard" feel
 // In a refined app, we'd use Server Actions + revalidatePath
 export default function StudioPage() {
-    const supabase = createClient()
     const searchParams = useSearchParams()
     const [ads, setAds] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
 
-    const regionFilter = searchParams.get('region')
+    const regionFilter = searchParams.get('region') ?? undefined
     const isDemo = searchParams.get('filter') === 'demo'
 
     const fetchAds = async () => {
         setLoading(true)
-        const { data: allAds, error } = await supabase
-            .from('wn_ads')
-            .select(`
-        *,
-        advertiser:wn_advertisers(name, type),
-        screen_assignments:wn_screen_assignments(region_target, specific_screen_id)
-      `)
-            .order('created_at', { ascending: false })
-
-        if (error) {
-            console.error(error)
-            setLoading(false)
-            return
+        try {
+            const data = await getAds({ region: regionFilter, isDemo })
+            setAds(data)
+        } catch (e) {
+            console.error(e)
         }
-
-        // Client-Filter logic (same as before)
-        let filtered = allAds || []
-        if (regionFilter) {
-            filtered = filtered.filter(ad =>
-                ad.screen_assignments.some((a: any) => a.region_target === regionFilter)
-            )
-        }
-        if (isDemo) {
-            filtered = filtered.filter(ad =>
-                ad.screen_assignments.some((a: any) => a.specific_screen_id !== null)
-            )
-        }
-
-        setAds(filtered)
         setLoading(false)
     }
 

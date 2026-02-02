@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite" // Configuring for Local SQLite first, switch to postgres for Prod/Railway
+
+}
+
+// Admin Users for Auth.js
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // Hashed
+  name      String?
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// WorkNet Core Models
+
+model Location {
+  id          String   @id @default(cuid())
+  name        String
+  type        String?  // 'kapper', 'salon', 'hq', etc
+  address     String?
+  region      String
+  isDemo      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  screens     Screen[]
+  relatedAdvertisers Advertiser[] // Cross-promo link
+}
+
+model Screen {
+  id          String   @id @default(cuid())
+  locationId  String
+  location    Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  deviceName  String
+  status      String   @default("offline") // 'online', 'offline'
+  orientation String   @default("landscape")
+  isDemo      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  specificAssignments Assignment[]
+}
+
+model Advertiser {
+  id          String   @id @default(cuid())
+  name        String
+  type        String?  // 'service', 'retail'
+  status      String   @default("pending")
+  contactEmail String?
+  isHost      Boolean  @default(false)
+  
+  relatedLocationId String?
+  relatedLocation   Location? @relation(fields: [relatedLocationId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ads         Ad[]
+}
+
+model Ad {
+  id          String   @id @default(cuid())
+  advertiserId String
+  advertiser   Advertiser @relation(fields: [advertiserId], references: [id], onDelete: Cascade)
+  
+  internalName String
+  bgUrl        String?
+  logoUrl      String?
+  headline     String
+  subtext      String?
+  
+  ctaType      String   @default("none") // 'qr', 'phone', 'url'
+  ctaValue     String?
+  
+  active       Boolean  @default(true)
+  seasonTag    String?
+  
+  // Advanced Management (Studio 2.0)
+  paymentStatus String  @default("paid") // 'paid', 'pending', 'overdue'
+  startDate     DateTime? 
+  endDate       DateTime?
+  weekSchedule  String  @default("[\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\", \"Sat\", \"Sun\"]") // Store JSON array as string for SQLite simplicity
+  promoCode     String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  assignments Assignment[]
+}
+
+model Assignment {
+  id          String   @id @default(cuid())
+  adId        String
+  ad          Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+  
+  regionTarget String?
+  
+  specificScreenId String?
+  specificScreen   Screen? @relation(fields: [specificScreenId], references: [id])
+  
+  priority    Int      @default(1)
+  createdAt   DateTime @default(now())
+}

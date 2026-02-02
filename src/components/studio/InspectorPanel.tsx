@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Save, Clock, Trash2, CreditCard, Calendar, Tag } from 'lucide-react'
-import { createClient } from '@/utils/supabase/client'
+import { updateAd } from '@/actions/ads'
 
 interface InspectorPanelProps {
     ad: any
@@ -12,7 +12,6 @@ interface InspectorPanelProps {
 }
 
 export function InspectorPanel({ ad, onClose, onUpdate }: InspectorPanelProps) {
-    const supabase = createClient()
     const [formData, setFormData] = useState({
         headline: '',
         subtext: '',
@@ -32,10 +31,10 @@ export function InspectorPanel({ ad, onClose, onUpdate }: InspectorPanelProps) {
                 headline: ad.headline || '',
                 subtext: ad.subtext || '',
                 active: ad.active,
-                payment_status: ad.payment_status || 'paid',
-                promo_code: ad.promo_code || '',
-                start_date: ad.start_date || '',
-                end_date: ad.end_date || '',
+                payment_status: ad.paymentStatus || 'paid', // camelCase from Prisma
+                promo_code: ad.promoCode || '', // camelCase
+                start_date: ad.startDate ? new Date(ad.startDate).toISOString().split('T')[0] : '',
+                end_date: ad.endDate ? new Date(ad.endDate).toISOString().split('T')[0] : '',
             })
         }
     }, [ad])
@@ -52,17 +51,14 @@ export function InspectorPanel({ ad, onClose, onUpdate }: InspectorPanelProps) {
             end_date: formData.end_date || null
         }
 
-        const { error } = await supabase
-            .from('wn_ads')
-            .update(updates)
-            .eq('id', ad.id)
+        const { error } = await updateAd(ad.id, updates)
 
         setSaving(false)
         if (!error) {
             onUpdate()
             onClose()
         } else {
-            alert('Error updating ad: ' + error.message)
+            alert('Error updating ad')
         }
     }
 

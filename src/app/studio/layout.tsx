@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server'
+import { getRegions } from '@/actions/locations'
 import { Sidebar } from '@/components/studio/Sidebar'
 
 export default async function StudioLayout({
@@ -6,18 +6,9 @@ export default async function StudioLayout({
 }: {
     children: React.ReactNode
 }) {
-    const supabase = await createClient()
-
+    
     // Fetch distinct regions for the sidebar
-    const { data: locations } = await supabase
-        .from('wn_locations') // Updated table name
-        .select('region')
-
-    // Unique regions logic
-    const regionsRaw = locations?.map((l: any) => l.region).filter(Boolean) || []
-    const uniqueRegions = Array.from(new Set(regionsRaw))
-        .map((r: any) => ({ region: r }))
-        .sort((a: any, b: any) => a.region.localeCompare(b.region))
+    const uniqueRegions = await getRegions()
 
     return (
         <div className="flex min-h-screen bg-black">

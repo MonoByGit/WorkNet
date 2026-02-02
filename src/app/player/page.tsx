@@ -1,26 +1,32 @@
-'use client'
-
-import { useState, useEffect } from 'react'
+// Player Page - Client Component handling LocalStorage pairing
+import { useEffect, useState } from 'react'
 import { PairingScreen } from '@/components/player/PairingScreen'
 import { PlaybackScreen } from '@/components/player/PlaybackScreen'
+import { Loader2 } from 'lucide-react'
 
 export default function PlayerPage() {
-    const [screenId, setScreenId] = useState<string | null>(null)
-    const [mounted, setMounted] = useState(false)
+  const [screenId, setScreenId] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
 
-    useEffect(() => {
-        setMounted(true)
-        const stored = localStorage.getItem('wn_screen_id')
-        if (stored) {
-            setScreenId(stored)
-        }
-    }, [])
-
-    if (!mounted) return null // Prevent hydration mismatch
-
-    if (!screenId) {
-        return <PairingScreen onPaired={(id) => setScreenId(id)} />
+  useEffect(() => {
+    setMounted(true)
+    const stored = localStorage.getItem('wn_screen_id')
+    if (stored) {
+      setScreenId(stored)
     }
+  }, [])
 
-    return <PlaybackScreen screenId={screenId} />
+  if (!mounted) {
+    return (
+        <div className="min-h-screen bg-black flex items-center justify-center">
+            <Loader2 className="w-8 h-8 text-white animate-spin" />
+        </div>
+    )
+  }
+
+  if (!screenId) {
+    return <PairingScreen onPaired={(id) => setScreenId(id)} />
+  }
+
+  return <PlaybackScreen screenId={screenId} />
 }

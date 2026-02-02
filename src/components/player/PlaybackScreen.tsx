@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/utils/supabase/client'
 import { AnimatePresence, motion } from 'framer-motion'
 import QRCode from 'react-qr-code'
+import { getPlaylistForScreen, getScreenDetails } from '@/actions/screens'
 import { Phone, Wifi, CloudOff } from 'lucide-react'
 
 interface PlaybackScreenProps {
@@ -11,7 +11,6 @@ interface PlaybackScreenProps {
 }
 
 export function PlaybackScreen({ screenId }: PlaybackScreenProps) {
-    const supabase = createClient()
     const [playlist, setPlaylist] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [currentIndex, setCurrentIndex] = useState(0)
@@ -19,33 +18,6 @@ export function PlaybackScreen({ screenId }: PlaybackScreenProps) {
 
     // 1. Fetch Screen Info & Playlist
     useEffect(() => {
-        async function init() {
-            // Get Screen details (Region is crucial)
-            const { data: screen } = await supabase
-                .from('wn_screens')
-                .select('*, wn_locations(region, name)')
-                .eq('id', screenId)
-                .single()
-
-            if (!screen) return
-            setScreenInfo(screen)
-
-            const region = screen.wn_locations?.region
-
-            // Get Assignments
-            // Logic: Specific ID match OR (Region Match AND Specific ID is Null)
-            // Supabase JS client doesn't support complex ORs across joined tables easily in one go efficiently without multiple queries or views.
-            // We will fetch ALL assignments that match either criteria separately or fetch broader set and filter.
-            // Let's try separate queries for clarity in this generated code and merge.
-
-            // A. Specific Assignments
-            const { data: specific } = await supabase
-                .from('wn_screen_assignments')
-                .select('*, ad:wn_ads(*, advertiser:wn_advertisers(name))')
-                .eq('specific_screen_id', screenId)
-
-            // B. Region Assignments
-            const { data: regionAds } = await supabase
                 .from('wn_screen_assignments')
                 .select('*, ad:wn_ads(*, advertiser:wn_advertisers(name))')
                 .eq('region_target', region)
