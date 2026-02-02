@@ -7,7 +7,6 @@ import { Layers, ArrowRight, Lock, Mail, Loader2, AlertCircle } from 'lucide-rea
 
 export default function LoginPage() {
     const router = useRouter()
-    // const supabase = createClient() // This line is no longer needed if using next-auth for sign-in
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
