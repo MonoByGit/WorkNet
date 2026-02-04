@@ -7,7 +7,9 @@ async function main() {
   console.log('🌱 Starting seed...')
 
   // 1. Admin User
-  const password = await bcrypt.hash('password123', 10)
+  // Default development password: WorkNet2026!Secure
+  // IMPORTANT: Change this password after first login in production!
+  const password = await bcrypt.hash('WorkNet2026!Secure', 10)
   const admin = await prisma.user.upsert({
     where: { email: 'admin@worknet.com' },
     update: {},
@@ -18,7 +20,9 @@ async function main() {
       role: 'admin',
     },
   })
-  console.log({ admin })
+  if (process.env.NODE_ENV === 'development') {
+    console.log({ admin })
+  }
 
   // 2. Regions (Locations)
   const regions = ['Amsterdam-Zuid', 'Utrecht Heuvelrug', 'Rotterdam Centrum', 'Eindhoven Strijp']

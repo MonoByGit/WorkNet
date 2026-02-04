@@ -2,9 +2,15 @@
 
 import prisma from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
+import { Prisma } from '@prisma/client'
 
-export async function getAds(filters?: { region?: string, isDemo?: boolean }) {
-  const where: any = {}
+interface AdFilters {
+  region?: string
+  isDemo?: boolean
+}
+
+export async function getAds(filters?: AdFilters) {
+  const where: Prisma.AdWhereInput = {}
 
   if (filters?.region) {
       where.assignments = {
@@ -33,7 +39,17 @@ export async function getAds(filters?: { region?: string, isDemo?: boolean }) {
   return ads
 }
 
-export async function updateAd(id: string, data: any) {
+interface UpdateAdData {
+  headline?: string
+  subtext?: string
+  active?: boolean
+  payment_status?: string
+  promo_code?: string
+  start_date?: string
+  end_date?: string
+}
+
+export async function updateAd(id: string, data: UpdateAdData) {
   try {
       await prisma.ad.update({
           where: { id },
@@ -43,14 +59,16 @@ export async function updateAd(id: string, data: any) {
               active: data.active,
               paymentStatus: data.payment_status, // Note camelCase mapping if needed (schema uses paymentStatus)
               promoCode: data.promo_code,
-              startDate: data.start_date ? new Date(data.start_date) : null,
-              endDate: data.end_date ? new Date(data.end_date) : null
+              startDate: data.start_date ? new Date(data.start_date) : undefined,
+              endDate: data.end_date ? new Date(data.end_date) : undefined
           }
       })
       revalidatePath('/studio')
       return { success: true }
   } catch (e) {
-      console.error(e)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to update ad:', e)
+      }
       return { error: 'Failed to update ad' }
   }
 }

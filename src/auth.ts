@@ -10,7 +10,9 @@ async function getUser(email: string) {
     const user = await prisma.user.findUnique({ where: { email } });
     return user;
   } catch (error) {
-    console.error('Failed to fetch user:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Failed to fetch user:', error);
+    }
     throw new Error('Failed to fetch user.');
   }
 }
@@ -28,12 +30,14 @@ export const { auth, signIn, signOut } = NextAuth({
           const { email, password } = parsedCredentials.data;
           const user = await getUser(email);
           if (!user) return null;
-          
+
           const passwordsMatch = await bcrypt.compare(password, user.password);
           if (passwordsMatch) return user;
         }
 
-        console.log('Invalid credentials');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Invalid credentials');
+        }
         return null;
       },
     }),
