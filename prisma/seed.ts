@@ -6,7 +6,10 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('🌱 Starting seed...')
 
-  // 1. Admin User
+  const enableDemoData = process.env.ENABLE_DEMO_DATA === 'true'
+  console.log(`Demo data: ${enableDemoData ? 'ENABLED' : 'DISABLED'}`)
+
+  // 1. Admin User (Always created)
   // Default development password: WorkNet2026!Secure
   // IMPORTANT: Change this password after first login in production!
   const password = await bcrypt.hash('WorkNet2026!Secure', 10)
@@ -20,8 +23,12 @@ async function main() {
       role: 'admin',
     },
   })
-  if (process.env.NODE_ENV === 'development') {
-    console.log({ admin })
+  console.log('✅ Admin user created/updated')
+
+  // Exit early if demo data is disabled
+  if (!enableDemoData) {
+    console.log('✅ Seed complete (admin only - demo data disabled)')
+    return
   }
 
   // 2. Regions (Locations)
